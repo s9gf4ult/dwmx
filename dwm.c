@@ -11,9 +11,9 @@
  * in O(1) time.
  *
  * Each child of the root window is called a client, except windows which have
- * set the override_redirect flag.  Clients are organized in a global
- * linked client list, the focus history is remembered through a global
- * stack list. Each client contains a bit array to indicate the tags of a
+ * set the override_redirect flag.  Clients are organized in a linked client
+ * list on each monitor, the focus history is remembered through a stack list
+ * on each monitor. Each client contains a bit array to indicate the tags of a
  * client.
  *
  * Keys and tagging rules are organized as arrays and defined in config.h.
@@ -45,16 +45,15 @@
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
 #define CLEANMASK(mask)         (mask & ~(numlockmask|LockMask))
 #define INRECT(X,Y,RX,RY,RW,RH) ((X) >= (RX) && (X) < (RX) + (RW) && (Y) >= (RY) && (Y) < (RY) + (RH))
-#define ISVISIBLE(x)            (x->tags & tagset[seltags])
-#define LENGTH(x)               (sizeof x / sizeof x[0])
-#define MAX(a, b)               ((a) > (b) ? (a) : (b))
-#define MIN(a, b)               ((a) < (b) ? (a) : (b))
-#define MAXTAGLEN               16
+#define ISVISIBLE(C)            ((C->tags & C->mon->tagset[C->mon->seltags]))
+#define LENGTH(X)               (sizeof X / sizeof X[0])
+#define MAX(A, B)               ((A) > (B) ? (A) : (B))
+#define MIN(A, B)               ((A) < (B) ? (A) : (B))
 #define MOUSEMASK               (BUTTONMASK|PointerMotionMask)
-#define WIDTH(x)                ((x)->w + 2 * (x)->bw)
-#define HEIGHT(x)               ((x)->h + 2 * (x)->bw)
-#define TAGMASK                 ((int)((1LL << LENGTH(tags)) - 1))
-#define TEXTW(x)                (textnw(x, strlen(x)) + dc.font.height)
+#define WIDTH(X)                ((X)->w + 2 * (X)->bw)
+#define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
+#define TAGMASK                 ((1 << LENGTH(tags)) - 1)
+#define TEXTW(X)                (textnw(X, strlen(X)) + dc.font.height)
 #define CURRENTTAGITEM 			(tagitems[maintag[seltags]])
 
 /* enums */
@@ -69,7 +68,7 @@ typedef union {
 	int i;
 	unsigned int ui;
 	float f;
-	void *v;
+	const void *v;
 } Arg;
 
 typedef struct {
@@ -80,6 +79,7 @@ typedef struct {
 	const Arg arg;
 } Button;
 
+typedef struct Monitor Monitor;
 typedef struct Client Client;
 struct Client {
 	char name[256];
@@ -91,6 +91,7 @@ struct Client {
 	Bool isfixed, isfloating, isurgent;
 	Client *next;
 	Client *snext;
+	Monitor *mon;
 	Window win;
 };
 
@@ -118,16 +119,8 @@ typedef struct {
 
 typedef struct {
 	const char *symbol;
-	void (*arrange)(void);
+	void (*arrange)(Monitor *);
 } Layout;
-
-typedef struct {
-	const char *class;
-	const char *instance;
-	const char *title;
-	unsigned int tags;
-	Bool isfloating;
-} Rule;
 
 typedef struct {
 	Layout *layout;
@@ -135,33 +128,68 @@ typedef struct {
 	unsigned int mainarea;
 } TagItem;
 
+struct Monitor {
+	char ltsymbol[16];
+	float mfact;
+	int num;
+	int by;               /* bar geometry */
+	int mx, my, mw, mh;   /* screen size */
+	int wx, wy, ww, wh;   /* window area  */
+	unsigned int seltags;
+	unsigned int sellt;
+	unsigned int tagset[2];
+	Bool showbar;
+	Bool topbar;
+	Client *clients;
+	Client *sel;
+	Client *stack;
+	Monitor *next;
+	Window barwin;
+	const Layout *lt[2];
+};
+
+typedef struct {
+	const char *class;
+	const char *instance;
+	const char *title;
+	unsigned int tags;
+	Bool isfloating;
+	int monitor;
+} Rule;
+
 /* function declarations */
 static void applyrules(Client *c);
-static Bool applysizehints(Client *c, int *x, int *y, int *w, int *h);
-static void arrange(void);
+static Bool applysizehints(Client *c, int *x, int *y, int *w, int *h, Bool interact);
+static void arrange(Monitor *m);
+static void arrangemon(Monitor *m);
 static void attach(Client *c);
 static void attachstack(Client *c);
 static void buttonpress(XEvent *e);
 static void checkotherwm(void);
 static void cleanup(void);
+static void cleanupmon(Monitor *mon);
 static void clearurgent(Client *c);
 static void configure(Client *c);
 static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
+static Monitor *createmon(void);
 static void destroynotify(XEvent *e);
 static void detach(Client *c);
 static void detachstack(Client *c);
 static void die(const char *errstr, ...);
-static void drawbar(void);
+static Monitor *dirtomon(int dir);
+static void drawbar(Monitor *m);
+static void drawbars(void);
 static void drawsquare(Bool filled, Bool empty, Bool invert, unsigned long col[ColLast]);
 static void drawtext(const char *text, unsigned long col[ColLast], Bool invert);
 static void enternotify(XEvent *e);
 static void expose(XEvent *e);
 static void focus(Client *c);
 static void focusin(XEvent *e);
+static void focusmon(const Arg *arg);
 static void focusstack(const Arg *arg);
-static Client *getclient(Window w);
 static unsigned long getcolor(const char *colstr);
+static Bool getrootptr(int *x, int *y);
 static long getstate(Window w);
 static Bool gettextprop(Window w, Atom atom, char *text, unsigned int size);
 static void grabbuttons(Client *c, Bool focused);
@@ -173,61 +201,65 @@ static void killclient(const Arg *arg);
 static void manage(Window w, XWindowAttributes *wa);
 static void mappingnotify(XEvent *e);
 static void maprequest(XEvent *e);
-static void monocle(void);
+static void monocle(Monitor *m);
 static void movemouse(const Arg *arg);
 static Client *nexttiled(Client *c);
-static Client * nextvisible(Client *c);
+static Monitor *ptrtomon(int x, int y);
 static void propertynotify(XEvent *e);
 static void quit(const Arg *arg);
-static void resize(Client *c, int x, int y, int w, int h);
+static void resize(Client *c, int x, int y, int w, int h, Bool interact);
 static void resizemouse(const Arg *arg);
-static void restack(void);
+static void restack(Monitor *m);
 static void run(void);
 static void scan(void);
+static void sendmon(Client *c, Monitor *m);
 static void setclientstate(Client *c, long state);
 static void setlayout(const Arg *arg);
 static void setmfact(const Arg *arg);
 static void setup(void);
 static void showhide(Client *c);
-static void sigchld(int signal);
+static void sigchld(int unused);
 static void spawn(const Arg *arg);
 static void tag(const Arg *arg);
+static void tagmon(const Arg *arg);
 static int textnw(const char *text, unsigned int len);
-static void tileu(void);
-static void tilel(void);
-static void tiler(void);
-static void tiled(void);
-static void accordion(void);
+static void tileu(Monitor *);
+static void tilel(Monitor *);
+static void tiler(Monitor *);
+static void tiled(Monitor *);
+static void accordion(Monitor *);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
-static void unmanage(Client *c);
+static void unfocus(Client *c);
+static void unmanage(Client *c, Bool destroyed);
 static void unmapnotify(XEvent *e);
-static void updatebar(void);
-static void updategeom(void);
+static Bool updategeom(void);
+static void updatebarpos(Monitor *m);
+static void updatebars(void);
 static void updatenumlockmask(void);
 static void updatesizehints(Client *c);
 static void updatestatus(void);
 static void updatetitle(Client *c);
 static void updatewmhints(Client *c);
 static void view(const Arg *arg);
+static Client *wintoclient(Window w);
+static Monitor *wintomon(Window w);
 static int xerror(Display *dpy, XErrorEvent *ee);
 static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
+static Client *tilestriph(Client *c, unsigned int count, int xo, int yo, int wo, int ho);
 static Client *tilestripv(Client *c, unsigned int count, int xo, int yo, int wo, int ho);
 static void setmainarea(const Arg *arg);
 static void restart(const Arg *arg);
-static Client *tilestriph(Client *c, unsigned int count, int xo, int yo, int wo, int ho);
 
 /* variables */
 static char stext[256];
 static int screen;
-static int sx, sy, sw, sh; /* X display screen geometry x, y, width, height */ 
-static int by, bh, blw;    /* bar geometry y, height and layout symbol width */
-static int wx, wy, ww, wh; /* window area geometry x, y, width, height, bar excluded */
-static unsigned int seltags = 0;
+static int sw, sh;           /* X display screen geometry width, height */
+static int bh, blw = 0;      /* bar geometry */
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 static unsigned int numlockmask = 0;
 static void (*handler[LASTEvent]) (XEvent *) = {
@@ -248,14 +280,11 @@ static Atom wmatom[WMLast], netatom[NetLast];
 static Bool otherwm;
 static Bool running = True;
 static Bool restarting = False;
-static Client *clients = NULL;
-static Client *sel = NULL;
-static Client *stack = NULL;
 static Cursor cursor[CurLast];
 static Display *dpy;
 static DC dc;
-static Layout *lt[] = { NULL, NULL };
-static Window root, barwin;
+static Monitor *mons = NULL, *selmon = NULL;
+static Window root;
 static char tmpstr[256];
 
 /* configuration, allows nested code to access above variables */
