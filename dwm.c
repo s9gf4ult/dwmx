@@ -925,7 +925,7 @@ getstate(Window w) {
 	Atom real;
 
 	status = XGetWindowProperty(dpy, w, wmatom[WMState], 0L, 2L, False, wmatom[WMState],
-			&real, &format, &n, &extra, (unsigned char **)&p);
+	                            &real, &format, &n, &extra, (unsigned char **)&p);
 	if(status != Success)
 		return -1;
 	if(n != 0)
@@ -984,7 +984,7 @@ grabbuttons(Client *c, Bool focused) {
 void
 grabkeys(void) {
 	updatenumlockmask();
-	{ /* grab keys */
+	{
 		unsigned int i, j;
 		unsigned int modifiers[] = { 0, LockMask, numlockmask, numlockmask|LockMask };
 		KeyCode code;
@@ -1015,6 +1015,7 @@ initfont(const char *fontstr) {
 		XFontSetExtents *font_extents;
 		XFontStruct **xfonts;
 		char **font_names;
+
 		dc.font.ascent = dc.font.descent = 0;
 		font_extents = XExtentsOfFontSet(dc.font.set);
 		n = XFontsOfFontSet(dc.font.set, &xfonts, &font_names);
