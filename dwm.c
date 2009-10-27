@@ -130,13 +130,11 @@ typedef struct {
 
 struct Monitor {
 	char ltsymbol[16];
-	float mfact;
 	int num;
 	int by;               /* bar geometry */
 	int mx, my, mw, mh;   /* screen size */
 	int wx, wy, ww, wh;   /* window area  */
 	unsigned int seltags;
-	unsigned int sellt;
 	unsigned int tagset[2];
 	Bool showbar;
 	Bool topbar;
@@ -145,7 +143,8 @@ struct Monitor {
 	Client *stack;
 	Monitor *next;
 	Window barwin;
-	const Layout *lt[2];
+	TagItem tagitems[LENGTH(tags)];
+	unsigned int maintag[2];
 };
 
 typedef struct {
@@ -412,9 +411,10 @@ arrange(Monitor *m) {
 
 void
 arrangemon(Monitor *m) {
-	strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof m->ltsymbol);
-	if(m->lt[m->sellt]->arrange)
-		m->lt[m->sellt]->arrange(m);
+	Layout *lt = m->tagitems[m->maintag[m->seltags]].layout;
+	strncpy(m->ltsymbol, lt->symbol, sizeof m->ltsymbol);
+	if(lt->arrange)
+		lt->arrange(m);
 	restack(m);
 }
 
@@ -491,7 +491,6 @@ cleanup(void) {
 	Monitor *m;
 
 	view(&a);
-	selmon->lt[selmon->sellt] = &foo;
 	for(m = mons; m; m = m->next)
 		while(m->stack)
 			unmanage(m->stack, False);
