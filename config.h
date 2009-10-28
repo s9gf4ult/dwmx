@@ -15,25 +15,23 @@ static Bool topbar                  = True;     /* False means bottom bar */
 
 /* tagging */
 static const char * tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
-static unsigned int tagset[] = {1, 1}; /* after start, first tag is selected */
-static unsigned int maintag[] = {0, 0};
 
 static Rule rules[] = {
-	/* class      instance    title       tags mask     isfloating */
-	{ "Gimp",     NULL,       NULL,       0,            False},
-	{ "MPlayer",  NULL, 	    NULL,       0,            True },
-	{ "Gimmix",   NULL,       NULL,       1<<8,         False},
-	{ "Firefox",  NULL,       NULL, 	    1<<4,         False},
-	{ "Firefox",  NULL,  "Настройки",     0,            True},
-	{ "Firefox",  NULL,  "Загрузки",     0,            True},
-	{ "Thunderbird-bin",NULL,     NULL,   1<<3,         False},
-	{ "Thunderbird-bin",NULL,"Настройки", 0,            True },
-	{ "Gajim", 	  NULL, 	    NULL,       1<<5,         False},
-	{ "Tkabber",  NULL,       NULL,       1<<5,         False},
-	{ "SAPGUI",   NULL,       NULL,       0,            True},
-	{ "VirtualBox",NULL,      NULL,       0,            True},
-	{ NULL, "gtk_file_chooser",NULL,      0,            True},
-	{ "Vncviewer", NULL,      NULL,       0,            True}
+	/* class      instance    title       tags mask     isfloating      Monitor*/
+	{ "Gimp",     NULL,       NULL,       0,            False,          -1},
+	{ "MPlayer",  NULL, 	    NULL,       0,            True ,          -1},
+	{ "Gimmix",   NULL,       NULL,       1<<8,         False,          -1},
+	{ "Firefox",  NULL,       NULL, 	    1<<4,         False,          -1},
+	{ "Firefox",  NULL,  "Настройки",     0,            True,           -1},
+	{ "Firefox",  NULL,   "Загрузки",     0,            True,           -1},
+	{ "Thunderbird-bin",NULL,     NULL,   1<<3,         False,          -1},
+	{ "Thunderbird-bin",NULL,"Настройки", 0,            True ,          -1},
+	{ "Gajim", 	  NULL, 	    NULL,       1<<5,         False,          -1},
+	{ "Tkabber",  NULL,       NULL,       1<<5,         False,          -1},
+	{ "SAPGUI",   NULL,       NULL,       0,            True,           -1},
+	{ "VirtualBox",NULL,      NULL,       0,            True,           -1},
+	{ NULL, "gtk_file_chooser",NULL,      0,            True,           -1},
+	{ "Vncviewer", NULL,      NULL,       0,            True,           -1}
 };
 
 /* layout(s) */
