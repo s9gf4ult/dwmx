@@ -14,7 +14,7 @@ static Bool showbar                 = True;     /* False means no bar */
 static Bool topbar                  = True;     /* False means bottom bar */
 
 /* tagging */
-static const char * tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+static const char * tags[MAXTAGS] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
 static Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating      Monitor*/
@@ -53,20 +53,21 @@ static Layout layouts[] = {
 #define TILE_TOP (&layouts[2])
 #define TILE_BOTTOM (&layouts[3])
 
-static TagItem tagitems[] = { 
-	 // layout           mfact    mainarea
-	{ TILE_ACCORDION,      0.8 ,    1}, //1
-	{ TILE_ACCORDION,      0.8 ,    1}, //2
-	{ TILE_TOP      ,      0.55,    1}, //3
-	{ TILE_TOP      ,      0.55,    1}, //4
-	{ TILE_TOP      ,      0.55,    1}, //5
-	{ TILE_LEFT     ,      0.65 ,    1}, //6
-	{ TILE_TOP      ,      0.55,    1}, //7
-	{ TILE_TOP      ,      0.55,    1}, //8
-	{ TILE_LEFT     ,      0.42,    1}  //9
-};
+//static TagItem tagitems[] = {
 
+		//// layout           mfact    mainarea
+		//{ TILE_ACCORDION,      0.8 ,    1}, //1
+		//{ TILE_ACCORDION,      0.8 ,    1}, //2
+		//{ TILE_TOP      ,      0.55,    1}, //3
+		//{ TILE_TOP      ,      0.55,    1}, //4
+		//{ TILE_TOP      ,      0.55,    1}, //5
+		//{ TILE_LEFT     ,      0.65,    1}, //6
+		//{ TILE_TOP      ,      0.55,    1}, //7
+		//{ TILE_TOP      ,      0.55,    1}, //8
+		//{ TILE_LEFT     ,      0.42,    1}  //9
+//};
 
+static TagItem DefaultTagItem = { TILE_LEFT, 0.6, 1};
 
 
 /* key definitions */
@@ -109,6 +110,10 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
 	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
 	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } },
+	{ MODKEY,                       XK_comma,  focusmon,       {.i = -1 } },
+	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
+	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
+	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
 	TAGKEYS(                        XK_3,                      2)

@@ -55,6 +55,7 @@
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X)                (textnw(X, strlen(X)) + dc.font.height)
 #define CURRENTTAGITEM 			(tagitems[maintag[seltags]])
+#define MAXTAGS             10
 
 /* enums */
 enum { CurNormal, CurResize, CurMove, CurLast };        /* cursor */
@@ -143,7 +144,7 @@ struct Monitor {
 	Client *stack;
 	Monitor *next;
 	Window barwin;
-	TagItem tagitems[LENGTH(tags)];
+	TagItem tagitems[MAXTAGS];
 	unsigned int maintag[2];
 };
 
@@ -627,12 +628,14 @@ createmon(void) {
 	if(!(m = (Monitor *)calloc(1, sizeof(Monitor))))
 		die("fatal: could not malloc() %u bytes\n", sizeof(Monitor));
 	m->tagset[0] = m->tagset[1] = 1;
-	m->mfact = mfact;
 	m->showbar = showbar;
 	m->topbar = topbar;
-	m->lt[0] = &layouts[0];
-	m->lt[1] = &layouts[1 % LENGTH(layouts)];
 	strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
+
+	for (int i = 0; i < LENGTH(tags); i++) {
+		memcpy(&m->tagitems[i], &DefaultTagItem, sizeof(TagItem));
+	}
+
 	return m;
 }
 
@@ -1471,25 +1474,30 @@ setclientstate(Client *c, long state) {
 
 void
 setlayout(const Arg *arg) {
+	TagItem *curtagitem = &selmon->tagitems[selmon->maintag[selmon->seltags]];
+	/*if(!arg || !arg->v || arg->v != curtagitem->layout)*/
+		/*selmon->sellt ^= 1;*/
 	if(arg && arg->v)
-		(CURRENTTAGITEM.layout) = (Layout *)arg->v;
-	if(sel)
-		arrange();
+		curtagitem->layout = (Layout *)arg->v;
+	strncpy(selmon->ltsymbol, curtagitem->layout->symbol, sizeof selmon->ltsymbol);
+	if(selmon->sel)
+		arrange(selmon);
 	else
-		drawbar();
+		drawbar(selmon);
 }
 
 /* arg > 1.0 will set mfact absolutly */
 void
 setmfact(const Arg *arg) {
 	float f;
+	TagItem *curtagitem = &selmon->tagitems[selmon->maintag[selmon->seltags]];
 
-	if(!arg || !(CURRENTTAGITEM.layout)->arrange)
+	if(!arg || curtagitem->layout->arrange)
 		return;
-	f = arg->f < 1.0 ? arg->f + CURRENTTAGITEM.mfact : arg->f - 1.0;
+	f = arg->f < 1.0 ? arg->f + curtagitem->mfact : arg->f - 1.0;
 	if(f < 0.1 || f > 0.9)
 		return;
-	CURRENTTAGITEM.mfact = f;
+	curtagitem->mfact = f;
 	arrange();
 }
 
@@ -2090,20 +2098,19 @@ updatewmhints(Client *c) {
 
 void
 view(const Arg *arg) {
-	if((arg->ui & TAGMASK) == tagset[seltags])
+	if((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
 		return;
 
-	seltags ^= 1; /* toggle sel tagset */
+	selmon->seltags ^= 1; /* toggle sel tagset */
 
-	if(arg->ui & TAGMASK) {
-		unsigned int curtagset = arg->ui & TAGMASK;
-		tagset[seltags] = curtagset;
+	if(unsigned int curtagset = arg->ui & TAGMASK) {
+		selmon->tagset[selmon->seltags] = curtagset;
 		int i;
 		for (i=0; (i < LENGTH(tags)) && ( ! (curtagset & 1)) ; i++, curtagset >>= 1);
-		maintag[seltags] = i;
+		selmon->maintag[selmon->seltags] = i;
 	}
 
-	arrange();
+	arrange(selmon);
 }
 
 Client *
