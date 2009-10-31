@@ -1743,6 +1743,7 @@ void tilestriph(Client *c, unsigned int count, int xo, int yo, int wo, int ho, C
 		--count;
 		c = nexttiled(c->next);
 	}
+	ca->c;
 	return;
 }
 
