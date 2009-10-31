@@ -204,6 +204,7 @@ static void maprequest(XEvent *e);
 static void monocle(Monitor *m);
 static void movemouse(const Arg *arg);
 static Client *nexttiled(Client *c);
+static Client * nextvisible( Client *c);
 static Monitor *ptrtomon(int x, int y);
 static void propertynotify(XEvent *e);
 static void quit(const Arg *arg);
@@ -583,7 +584,7 @@ configurerequest(XEvent *e) {
 	Monitor *m;
 	XConfigureRequestEvent *ev = &e->xconfigurerequest;
 	XWindowChanges wc;
-	TagItem *curtagitem = &m->tagitems[m->maintag[m->seltags]];
+	TagItem *curtagitem = &selmon->tagitems[selmon->maintag[selmon->seltags]];
 
 	if((c = wintoclient(ev->window))) {
 		if(ev->value_mask & CWBorderWidth)
@@ -1269,6 +1270,12 @@ nexttiled(Client *c) {
 	return c;
 }
 
+Client * nextvisible( Client *c)
+{
+	while(c && !ISVISIBLE(c)) {c=c->next;};
+	return c;
+}
+
 Monitor *
 ptrtomon(int x, int y) {
 	Monitor *m;
@@ -1794,7 +1801,7 @@ void accordion(Monitor *m)
 		i=1;
 		while(c) {
 			int hh = ((i != n) ? ((c == maincl) ? mh : sh) : (m->wh - (y - m->wy))); 
-			resize(c, m->wx, y, m->ww - (2 * c->bw), hh - (2 * c->bw));
+			resize(c, m->wx, y, m->ww - (2 * c->bw), hh - (2 * c->bw), False);
 			y += HEIGHT(c);
 			c = nexttiled(c->next);
 			i++;
@@ -2111,12 +2118,13 @@ updatewmhints(Client *c) {
 
 void
 view(const Arg *arg) {
+
 	if((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
 		return;
 
 	selmon->seltags ^= 1; /* toggle sel tagset */
-
-	if(unsigned int curtagset = arg->ui & TAGMASK) {
+	unsigned int curtagset = (arg->ui & TAGMASK);
+	if(curtagset) {
 		selmon->tagset[selmon->seltags] = curtagset;
 		int i;
 		for (i=0; (i < LENGTH(tags)) && ( ! (curtagset & 1)) ; i++, curtagset >>= 1);
@@ -2190,8 +2198,11 @@ xerrorstart(Display *dpy, XErrorEvent *ee) {
 void
 zoom(const Arg *arg) {
 	Client *c = selmon->sel;
+	TagItem *curtagitem = &selmon->tagitems[selmon->maintag[selmon->seltags]];
 
-	if(!(CURRENTTAGITEM.layout)->arrange || (CURRENTTAGITEM.layout)->arrange == monocle || (sel && sel->isfloating))
+	if(!curtagitem->layout->arrange
+	|| curtagitem->layout->arrange == monocle
+	|| (selmon->sel && selmon->sel->isfloating))
 		return;
 	if(c == nexttiled(selmon->clients))
 		if(!c || !(c = nexttiled(c->next)))
