@@ -223,6 +223,8 @@ static void spawn(const Arg *arg);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
 static int textnw(const char *text, unsigned int len);
+static Client *tilestripv(Client *c, unsigned int count, int xo, int yo, int wo, int ho);
+static Client *tilestriph(Client *c, unsigned int count, int xo, int yo, int wo, int ho);
 static void tileu(Monitor *);
 static void tilel(Monitor *);
 static void tiler(Monitor *);
@@ -1668,21 +1670,22 @@ tilel(Monitor *m) {
 }
 
 void
-tiler(void) {
+tiler(Monitor *m) {
 	unsigned int  n;
 	Client *c;
+	TagItem *curtagitem = &m->tagitems[m->maintag[m->seltags]];
 
-	for(n = 0, c = nexttiled(clients); c; c = nexttiled(c->next), n++);
+	for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if(n == 0)
 		return;
 
 	/* master */
-	c = nexttiled(clients);
-	c = tilestripv(c, n < CURRENTTAGITEM.mainarea ? n : CURRENTTAGITEM.mainarea, n <= CURRENTTAGITEM.mainarea ? wx : wx + ((1 - CURRENTTAGITEM.mfact) * ww) , wy, (n <= CURRENTTAGITEM.mainarea ? 1 : CURRENTTAGITEM.mfact) * ww , wh);
-	if ((!c) || (n <= CURRENTTAGITEM.mainarea)) return;
+	c = nexttiled(m->clients);
+	c = tilestripv(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, n <= curtagitem->mainarea ? m->wx : m->wx + ((1 - curtagitem->mfact) * m->ww) , m->wy, (n <= curtagitem->mainarea ? 1 : curtagitem->mfact) * m->ww , m->wh);
+	if ((!c) || (n <= curtagitem->mainarea)) return;
 
 	/* tile stack */
-	tilestripv(c, n - CURRENTTAGITEM.mainarea, wx, wy, ww * (1 - CURRENTTAGITEM.mfact), wh);
+	tilestripv(c, n - curtagitem->mainarea, m->wx, m->wy, m->ww * (1 - curtagitem->mfact), m->wh);
 
 }
 
@@ -1697,7 +1700,7 @@ Client *tilestriph(Client *c, unsigned int count, int xo, int yo, int wo, int ho
 
 	while ((count) && (c)) {
 		int bww = c->bw * 2;
-		resize(c, xo, yo, (count == 1 ? wo - (xo - xold) : woh) - bww, ho - bww);
+		resize(c, xo, yo, (count == 1 ? wo - (xo - xold) : woh) - bww, ho - bww, False);
 		if (count != 1) xo += WIDTH(c);
 		--count;
 		c = nexttiled(c->next);
