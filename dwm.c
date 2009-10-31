@@ -55,7 +55,7 @@
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X)                (textnw(X, strlen(X)) + dc.font.height)
 #define CURRENTTAGITEM 			(tagitems[maintag[seltags]])
-#define MAXTAGS             10
+#define MAXTAGS            9 
 
 /* enums */
 enum { CurNormal, CurResize, CurMove, CurLast };        /* cursor */
@@ -1664,7 +1664,7 @@ tilel(Monitor *m) {
 	c = nexttiled(m->clients);
 	Client *cc = c;
 	mw = m->ww * curtagitem->mfact;
-	c = tilestripv(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, m->wx, m->wy, n <= curtagitem->mainarea ? m->ww : m->mw, m->wh);
+	c = tilestripv(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, m->wx, m->wy, n <= curtagitem->mainarea ? m->ww : mw, m->wh);
 	if ((!c) || (n <= curtagitem->mainarea)) return;
 
 	/* tile stack */
@@ -1731,7 +1731,7 @@ void tileu(Monitor *m)
 	c = nexttiled(m->clients);
 	Client *cc = c;
 	mh = m->wh * curtagitem->mfact;
-	c = tilestriph(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, m->wx, m->wy, m->ww, n <= curtagitem->mainarea ? m->wh : m->mh);
+	c = tilestriph(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, m->wx, m->wy, m->ww, n <= curtagitem->mainarea ? m->wh : mh);
 	if ((!c) || (n <= curtagitem->mainarea)) return;
 
 	/* tile stack */
