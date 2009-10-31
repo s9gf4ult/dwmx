@@ -1648,15 +1648,16 @@ void tilestripv(Client *c, unsigned int count, int xo, int yo, int wo, int ho, C
 	resize(c, xo, yo, wo - bww, hoh - bww, False);
 	ca->x = c->x;
 	ca->y = c->y;
-	ca->w = c->w;
-	ca->h = c->h;
+	ca->w = c->w + bww;
+	ca->h = c->h + bww;
+	yo += HEIGHT(c);
 	c = nexttiled(c->next);
 	--count;
 	while ((count) && (c)) {
 		bww = c->bw * 2;
 		resize(c, xo, yo, wo - bww, (count == 1 ? ho - (yo - yold) : hoh) - bww, False);
-		ca->w = MAX(ca->w, c->w);
-		ca->h = (c->y + c->h) - ca->y;
+		ca->w = MAX(ca->w, c->w + bww);
+		ca->h = (c->y + c->h) - ca->y + bww;
 		yo += HEIGHT(c);
 		--count;
 		c = nexttiled(c->next);
@@ -1727,16 +1728,17 @@ void tilestriph(Client *c, unsigned int count, int xo, int yo, int wo, int ho, C
 	resize(c, xo, yo, woh - bww, ho - bww, False);
 	ca->x = c->x;
 	ca->y = c->y;
-	ca->w = c->w;
-	ca->h = c->h;
+	ca->w = c->w + bww;
+	ca->h = c->h + bww;
+	xo += WIDTH(c);
 	c = nexttiled(c->next);
 	--count;
 
 	while ((count) && (c)) {
 		bww = c->bw * 2;
 		resize(c, xo, yo, (count == 1 ? wo - (xo - xold) : woh) - bww, ho - bww, False);
-		ca->h = MAX(ca->h, c->h);
-		ca->w = (c->x + c->w) - ca->x;
+		ca->h = MAX(ca->h, c->h + bww);
+		ca->w = (c->x + c->w) - ca->x + bww;
 		xo += WIDTH(c);
 		--count;
 		c = nexttiled(c->next);
