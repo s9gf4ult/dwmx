@@ -488,7 +488,6 @@ checkotherwm(void) {
 void
 cleanup(void) {
 	Arg a = {.ui = ~0};
-	Layout foo = { "", NULL };
 	Monitor *m;
 
 	view(&a);
@@ -582,11 +581,12 @@ configurerequest(XEvent *e) {
 	Monitor *m;
 	XConfigureRequestEvent *ev = &e->xconfigurerequest;
 	XWindowChanges wc;
+	TagItem *curtagitem = &m->tagitems[m->maintag[m->seltags]];
 
 	if((c = wintoclient(ev->window))) {
 		if(ev->value_mask & CWBorderWidth)
 			c->bw = ev->border_width;
-		else if(c->isfloating || !selmon->lt[selmon->sellt]->arrange) {
+		else if(c->isfloating || !curtagitem->layout->arrange) {
 			m = c->mon;
 			if(ev->value_mask & CWX)
 				c->x = m->mx + ev->x;
@@ -1211,6 +1211,7 @@ movemouse(const Arg *arg) {
 	Client *c;
 	Monitor *m;
 	XEvent ev;
+	TagItem *curtagitem = &selmon->tagitems[selmon->maintag[selmon->seltags]];
 
 	if(!(c = selmon->sel))
 		return;
@@ -1243,11 +1244,11 @@ movemouse(const Arg *arg) {
 					ny = selmon->wy;
 				else if(abs((selmon->wy + selmon->wh) - (ny + HEIGHT(c))) < snap)
 					ny = selmon->wy + selmon->wh - HEIGHT(c);
-				if(!c->isfloating && selmon->lt[selmon->sellt]->arrange
+				if(!c->isfloating && curtagitem->layout->arrange
 				&& (abs(nx - c->x) > snap || abs(ny - c->y) > snap))
 					togglefloating(NULL);
 			}
-			if(!selmon->lt[selmon->sellt]->arrange || c->isfloating)
+			if(!curtagitem->layout->arrange || c->isfloating)
 				resize(c, nx, ny, c->w, c->h, True);
 			break;
 		}
@@ -1345,6 +1346,7 @@ resizemouse(const Arg *arg) {
 	Client *c;
 	Monitor *m;
 	XEvent ev;
+	TagItem *curtagitem = &selmon->tagitems[selmon->maintag[selmon->seltags]];
 
 	if(!(c = selmon->sel))
 		return;
@@ -1369,11 +1371,11 @@ resizemouse(const Arg *arg) {
 			if(snap && nw >= selmon->wx && nw <= selmon->wx + selmon->ww
 			&& nh >= selmon->wy && nh <= selmon->wy + selmon->wh)
 			{
-				if(!c->isfloating && selmon->lt[selmon->sellt]->arrange
+				if(!c->isfloating && curtagitem->layout->arrange
 				&& (abs(nw - c->w) > snap || abs(nh - c->h) > snap))
 					togglefloating(NULL);
 			}
-			if(!selmon->lt[selmon->sellt]->arrange || c->isfloating)
+			if(!curtagitem->layout->arrange || c->isfloating)
 				resize(c, c->x, c->y, nw, nh, True);
 			break;
 		}
@@ -1393,13 +1395,14 @@ restack(Monitor *m) {
 	Client *c;
 	XEvent ev;
 	XWindowChanges wc;
+	TagItem *curtagitem = &m->tagitems[m->maintag[m->seltags]];
 
 	drawbar(m);
 	if(!m->sel)
 		return;
-	if(m->sel->isfloating || !m->lt[m->sellt]->arrange)
+	if(m->sel->isfloating || !curtagitem->layout->arrange)
 		XRaiseWindow(dpy, m->sel->win);
-	if(m->lt[m->sellt]->arrange) {
+	if(curtagitem->layout->arrange) {
 		wc.stack_mode = Below;
 		wc.sibling = m->barwin;
 		for(c = m->stack; c; c = c->snext)
@@ -1492,13 +1495,13 @@ setmfact(const Arg *arg) {
 	float f;
 	TagItem *curtagitem = &selmon->tagitems[selmon->maintag[selmon->seltags]];
 
-	if(!arg || curtagitem->layout->arrange)
+	if(!arg || !curtagitem->layout->arrange)
 		return;
 	f = arg->f < 1.0 ? arg->f + curtagitem->mfact : arg->f - 1.0;
 	if(f < 0.1 || f > 0.9)
 		return;
 	curtagitem->mfact = f;
-	arrange();
+	arrange(selmon);
 }
 
 void
@@ -1556,12 +1559,14 @@ setup(void) {
 
 void
 showhide(Client *c) {
+	TagItem *curtagitem = &selmon->tagitems[selmon->maintag[selmon->seltags]];
+
 	if(!c)
 		return;
 	if(ISVISIBLE(c)) { /* show clients top down */
 		XMoveWindow(dpy, c->win, c->x, c->y);
-		if(!(CURRENTTAGITEM.layout)->arrange || c->isfloating)
-			resize(c, c->x, c->y, c->w, c->h);
+		if(!curtagitem->layout->arrange || c->isfloating)
+			resize(c, c->x, c->y, c->w, c->h, False);
 		showhide(c->snext);
 	}
 	else { /* hide clients bottom up */
@@ -1626,7 +1631,7 @@ Client *tilestripv(Client *c, unsigned int count, int xo, int yo, int wo, int ho
 	
 	while ((count) && (c)) {
 		int bww = c->bw * 2;
-		resize(c, xo, yo, wo - bww, (count == 1 ? ho - (yo - yold) : hoh) - bww  );
+		resize(c, xo, yo, wo - bww, (count == 1 ? ho - (yo - yold) : hoh) - bww, False);
 		if (count != 1) yo += HEIGHT(c);
 		--count;
 		c = nexttiled(c->next);
