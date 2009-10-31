@@ -102,7 +102,7 @@ typedef struct {
 	int w;
 	int h;
 	Client *c;
-} ClientsArea
+} ClientsArea;
 
 typedef struct {
 	int x, y, w, h;
@@ -232,8 +232,6 @@ static void spawn(const Arg *arg);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
 static int textnw(const char *text, unsigned int len);
-static Client *tilestripv(Client *c, unsigned int count, int xo, int yo, int wo, int ho);
-static Client *tilestriph(Client *c, unsigned int count, int xo, int yo, int wo, int ho);
 static void tileu(Monitor *);
 static void tilel(Monitor *);
 static void tiler(Monitor *);
@@ -261,8 +259,8 @@ static int xerror(Display *dpy, XErrorEvent *ee);
 static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
-static Client *tilestriph(Client *c, unsigned int count, int xo, int yo, int wo, int ho);
-static Client *tilestripv(Client *c, unsigned int count, int xo, int yo, int wo, int ho);
+static void tilestriph(Client *c, unsigned int count, int xo, int yo, int wo, int ho, ClientsArea *ca);
+static void tilestripv(Client *c, unsigned int count, int xo, int yo, int wo, int ho, ClientsArea *ca); 
 static void setmainarea(const Arg *arg);
 static void restart(const Arg *arg);
 
@@ -1641,22 +1639,30 @@ textnw(const char *text, unsigned int len) {
 
 void tilestripv(Client *c, unsigned int count, int xo, int yo, int wo, int ho, ClientsArea *ca) 
 {
-	if (! count || !ca) return NULL;
+	if (! count || !ca || !c) return;
 
   int yold = yo;
 	int hoh = ho / count;
-	ca.x = xo;
-	ca.y = yo;
+	int bww = c->bw * 2;
 	
+	resize(c, xo, yo, wo - bww, hoh - bww, False);
+	ca->x = c->x;
+	ca->y = c->y;
+	ca->w = c->w;
+	ca->h = c->h;
+	c = nexttiled(c->next);
+	--count;
 	while ((count) && (c)) {
-		int bww = c->bw * 2;
+		bww = c->bw * 2;
 		resize(c, xo, yo, wo - bww, (count == 1 ? ho - (yo - yold) : hoh) - bww, False);
+		ca->w = MAX(ca->w, c->w);
+		ca->h = (c->y + c->h) - ca->y;
 		yo += HEIGHT(c);
-		/*if (count != 1) yo += HEIGHT(c);*/
 		--count;
 		c = nexttiled(c->next);
 	}
-	return c;
+	ca->c = c;
+	return;
 }
 
 
@@ -1666,6 +1672,7 @@ tilel(Monitor *m) {
 	unsigned int  n;
 	Client *c;
 	TagItem *curtagitem = &m->tagitems[m->maintag[m->seltags]];
+	ClientsArea ca;
 
 	for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if(n == 0)
@@ -1673,17 +1680,15 @@ tilel(Monitor *m) {
 
 	/* master */
 	c = nexttiled(m->clients);
-	Client *cc = c;
 	mw = m->ww * curtagitem->mfact;
-	c = tilestripv(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, m->wx, m->wy, n <= curtagitem->mainarea ? m->ww : mw, m->wh);
+	tilestripv(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, m->wx, m->wy, n <= curtagitem->mainarea ? m->ww : mw, m->wh, &ca);
+	c = ca.c;
 	if ((!c) || (n <= curtagitem->mainarea)) return;
 
 	/* tile stack */
-	int onex = m->wx + mw;
-	int twox = cc->x + cc->w;
-	x = onex > twox ? onex : twox;
+	x = ca.x + ca.w;
 	w = m->ww - (x - m->wx);
-	tilestripv(c, n - curtagitem->mainarea, x, m->wy, w, m->wh);
+	tilestripv(c, n - curtagitem->mainarea, x, m->wy, w, m->wh, &ca);
 
 }
 
@@ -1692,6 +1697,7 @@ tiler(Monitor *m) {
 	unsigned int  n;
 	Client *c;
 	TagItem *curtagitem = &m->tagitems[m->maintag[m->seltags]];
+	ClientsArea ca;
 
 	for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if(n == 0)
@@ -1699,32 +1705,43 @@ tiler(Monitor *m) {
 
 	/* master */
 	c = nexttiled(m->clients);
-	c = tilestripv(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, n <= curtagitem->mainarea ? m->wx : m->wx + ((1 - curtagitem->mfact) * m->ww) , m->wy, (n <= curtagitem->mainarea ? 1 : curtagitem->mfact) * m->ww , m->wh);
+	tilestripv(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, n <= curtagitem->mainarea ? m->wx : m->wx + ((1 - curtagitem->mfact) * m->ww) , m->wy, (n <= curtagitem->mainarea ? 1 : curtagitem->mfact) * m->ww , m->wh, &ca);
+	c = ca.c;
 	if ((!c) || (n <= curtagitem->mainarea)) return;
 
 	/* tile stack */
-	tilestripv(c, n - curtagitem->mainarea, m->wx, m->wy, m->ww * (1 - curtagitem->mfact), m->wh);
+	tilestripv(c, n - curtagitem->mainarea, m->wx, m->wy, ca.x - m->wx, m->wh, &ca);
 
 }
 
 
 
-Client *tilestriph(Client *c, unsigned int count, int xo, int yo, int wo, int ho)
+void tilestriph(Client *c, unsigned int count, int xo, int yo, int wo, int ho, ClientsArea *ca)
 {
-	if (! count) return NULL;
+	if (!count || !c || !ca) return;
 
 	int xold = xo;
 	int woh = wo / count;
+	int bww = c->bw * 2;
+
+	resize(c, xo, yo, woh - bww, ho - bww, False);
+	ca->x = c->x;
+	ca->y = c->y;
+	ca->w = c->w;
+	ca->h = c->h;
+	c = nexttiled(c->next);
+	--count;
 
 	while ((count) && (c)) {
-		int bww = c->bw * 2;
+		bww = c->bw * 2;
 		resize(c, xo, yo, (count == 1 ? wo - (xo - xold) : woh) - bww, ho - bww, False);
+		ca->h = MAX(ca->h, c->h);
+		ca->w = (c->x + c->w) - ca->x;
 		xo += WIDTH(c);
-		/*if (count != 1) xo += WIDTH(c);*/
 		--count;
 		c = nexttiled(c->next);
 	}
-	return c;
+	return;
 }
 
 
@@ -1734,6 +1751,7 @@ void tileu(Monitor *m)
 	unsigned int  n;
 	Client *c;
 	TagItem *curtagitem = &m->tagitems[m->maintag[m->seltags]];
+	ClientsArea ca;
 
 	for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if(n == 0)
@@ -1741,17 +1759,15 @@ void tileu(Monitor *m)
 
 	/* master */
 	c = nexttiled(m->clients);
-	Client *cc = c;
 	mh = m->wh * curtagitem->mfact;
-	c = tilestriph(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, m->wx, m->wy, m->ww, n <= curtagitem->mainarea ? m->wh : mh);
+	tilestriph(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, m->wx, m->wy, m->ww, n <= curtagitem->mainarea ? m->wh : mh, &ca);
+	c = ca.c;
 	if ((!c) || (n <= curtagitem->mainarea)) return;
 
 	/* tile stack */
-	int oney = m->wy + mh;
-	int twoy = cc->y + cc->h;
-	y = oney > twoy ? oney : twoy;
+	y = ca.y + ca.h;
 	h = m->wh - (y - m->wy);
-	tilestriph(c, n - curtagitem->mainarea, m->wx, y, m->ww, h);
+	tilestriph(c, n - curtagitem->mainarea, m->wx, y, m->ww, h, &ca);
 
 }
 
@@ -1760,6 +1776,7 @@ void tiled(Monitor *m)
 	unsigned int  n;
 	Client *c;
 	TagItem *curtagitem = &m->tagitems[m->maintag[m->seltags]];
+	ClientsArea ca;
 
 	for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if(n == 0)
@@ -1767,11 +1784,12 @@ void tiled(Monitor *m)
 
 	/* master */
 	c = nexttiled(m->clients);
-	c = tilestriph(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, m->wx, m->wy + (n <= curtagitem->mainarea ? 0  : ((1 - curtagitem->mfact) * m->wh)), m->ww, m->wh * (n <= curtagitem->mainarea ? 1 : curtagitem->mfact));
+	tilestriph(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, m->wx, m->wy + (n <= curtagitem->mainarea ? 0  : ((1 - curtagitem->mfact) * m->wh)), m->ww, m->wh * (n <= curtagitem->mainarea ? 1 : curtagitem->mfact), &ca);
+	c = ca.c;
 	if ((!c) || (n <= curtagitem->mainarea)) return;
 
 	/* tile stack */
-	tilestriph(c, n - curtagitem->mainarea, m->wx, m->wy, m->ww, ((1 - curtagitem->mfact) * m->wh));
+	tilestriph(c, n - curtagitem->mainarea, m->wx, m->wy, m->ww, ca.y - m->wy, &ca);
 
 }
 

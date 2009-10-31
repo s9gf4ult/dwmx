@@ -1,10 +1,10 @@
 # dwm version
-VERSION = 5.5
+VERSION = 5.7.2
 
 # Customize below to fit your system
 
 # paths
-PREFIX = /usr
+PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
 
 X11INC = /usr/X11R6/include
@@ -20,8 +20,10 @@ LIBS = -L/usr/lib -lc -L${X11LIB} -lX11 ${XINERAMALIBS}
 
 # flags
 CPPFLAGS = -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS}
-CFLAGS = -std=c99 -pedantic -Wall -O0 -ggdb ${INCS} ${CPPFLAGS}
-LDFLAGS =  ${LIBS}
+#CFLAGS = -std=c99 -pedantic -Wall -O3 ${INCS} ${CPPFLAGS}
+#LDFLAGS = -s ${LIBS}
+CFLAGS = -ggdb -std=c99 -pedantic -Wall -O0 ${INCS} ${CPPFLAGS}
+LDFLAGS = -ggdb ${LIBS}
 
 # Solaris
 #CFLAGS = -fast ${INCS} -DVERSION=\"${VERSION}\"
