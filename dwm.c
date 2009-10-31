@@ -898,7 +898,7 @@ focusstack(const Arg *arg) {
 	}
 	if(c) {
 		focus(c);
-		restack(selmon);
+		arrange(selmon);
 	}
 }
 
@@ -1641,7 +1641,8 @@ Client *tilestripv(Client *c, unsigned int count, int xo, int yo, int wo, int ho
 	while ((count) && (c)) {
 		int bww = c->bw * 2;
 		resize(c, xo, yo, wo - bww, (count == 1 ? ho - (yo - yold) : hoh) - bww, False);
-		if (count != 1) yo += HEIGHT(c);
+		yo += HEIGHT(c);
+		/*if (count != 1) yo += HEIGHT(c);*/
 		--count;
 		c = nexttiled(c->next);
 	}
@@ -1708,7 +1709,8 @@ Client *tilestriph(Client *c, unsigned int count, int xo, int yo, int wo, int ho
 	while ((count) && (c)) {
 		int bww = c->bw * 2;
 		resize(c, xo, yo, (count == 1 ? wo - (xo - xold) : woh) - bww, ho - bww, False);
-		if (count != 1) xo += WIDTH(c);
+		xo += WIDTH(c);
+		/*if (count != 1) xo += WIDTH(c);*/
 		--count;
 		c = nexttiled(c->next);
 	}
