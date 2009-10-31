@@ -97,6 +97,14 @@ struct Client {
 };
 
 typedef struct {
+	int x;
+	int y;
+	int w;
+	int h;
+	Client *c;
+} ClientsArea
+
+typedef struct {
 	int x, y, w, h;
 	unsigned long norm[ColLast];
 	unsigned long sel[ColLast];
@@ -1631,12 +1639,14 @@ textnw(const char *text, unsigned int len) {
 	return XTextWidth(dc.font.xfont, text, len);
 }
 
-Client *tilestripv(Client *c, unsigned int count, int xo, int yo, int wo, int ho) 
+void tilestripv(Client *c, unsigned int count, int xo, int yo, int wo, int ho, ClientsArea *ca) 
 {
-	if (! count) return NULL;
+	if (! count || !ca) return NULL;
 
   int yold = yo;
 	int hoh = ho / count;
+	ca.x = xo;
+	ca.y = yo;
 	
 	while ((count) && (c)) {
 		int bww = c->bw * 2;
