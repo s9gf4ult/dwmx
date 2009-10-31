@@ -1709,57 +1709,60 @@ Client *tilestriph(Client *c, unsigned int count, int xo, int yo, int wo, int ho
 }
 
 
-void tileu(void)
+void tileu(Monitor *m)
 {
 	int y, h, mh;
 	unsigned int  n;
 	Client *c;
+	TagItem *curtagitem = &m->tagitems[m->maintag[m->seltags]];
 
-	for(n = 0, c = nexttiled(clients); c; c = nexttiled(c->next), n++);
+	for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if(n == 0)
 		return;
 
 	/* master */
-	c = nexttiled(clients);
+	c = nexttiled(m->clients);
 	Client *cc = c;
-	mh = wh * CURRENTTAGITEM.mfact;
-	c = tilestriph(c, n < CURRENTTAGITEM.mainarea ? n : CURRENTTAGITEM.mainarea, wx, wy, ww, n <= CURRENTTAGITEM.mainarea ? wh : mh);
-	if ((!c) || (n <= CURRENTTAGITEM.mainarea)) return;
+	mh = m->wh * curtagitem->mfact;
+	c = tilestriph(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, m->wx, m->wy, m->ww, n <= curtagitem->mainarea ? m->wh : m->mh);
+	if ((!c) || (n <= curtagitem->mainarea)) return;
 
 	/* tile stack */
-	int oney = wy + mh;
+	int oney = m->wy + mh;
 	int twoy = cc->y + cc->h;
 	y = oney > twoy ? oney : twoy;
-	h = wh - (y - wy);
-	tilestriph(c, n - CURRENTTAGITEM.mainarea, wx, y, ww, h);
+	h = m->wh - (y - m->wy);
+	tilestriph(c, n - curtagitem->mainarea, m->wx, y, m->ww, h);
 
 }
 
-void tiled(void)
+void tiled(Monitor *m)
 {
 	unsigned int  n;
 	Client *c;
+	TagItem *curtagitem = &m->tagitems[m->maintag[m->seltags]];
 
-	for(n = 0, c = nexttiled(clients); c; c = nexttiled(c->next), n++);
+	for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if(n == 0)
 		return;
 
 	/* master */
-	c = nexttiled(clients);
-	c = tilestriph(c, n < CURRENTTAGITEM.mainarea ? n : CURRENTTAGITEM.mainarea, wx, wy + (n <= CURRENTTAGITEM.mainarea ? 0  : ((1 - CURRENTTAGITEM.mfact) * wh)), ww, wh * (n <= CURRENTTAGITEM.mainarea ? 1 : CURRENTTAGITEM.mfact));
-	if ((!c) || (n <= CURRENTTAGITEM.mainarea)) return;
+	c = nexttiled(m->clients);
+	c = tilestriph(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, m->wx, m->wy + (n <= curtagitem->mainarea ? 0  : ((1 - curtagitem->mfact) * m->wh)), m->ww, m->wh * (n <= curtagitem->mainarea ? 1 : curtagitem->mfact));
+	if ((!c) || (n <= curtagitem->mainarea)) return;
 
 	/* tile stack */
-	tilestriph(c, n - CURRENTTAGITEM.mainarea, wx, wy, ww, ((1 - CURRENTTAGITEM.mfact)*wh));
+	tilestriph(c, n - curtagitem->mainarea, m->wx, m->wy, m->ww, ((1 - curtagitem->mfact) * m->wh));
 
 }
 
 
-void accordion(void)
+void accordion(Monitor *m)
 {
 	Client *c;
 	int y, mh, sh;
 	unsigned int n;
+	TagItem *curtagitem = &m->tagitems[m->maintag[m->seltags]];
 
 	c=nexttiled(clients); n=0;
 	while(c){n++; c=nexttiled(c->next);};
@@ -1785,8 +1788,8 @@ void accordion(void)
 		
 		//applying resizing
 		c=nexttiled(clients);
-		mh=wh*CURRENTTAGITEM.mfact;
-		sh=wh*(1.-CURRENTTAGITEM.mfact)/(n-1);
+		mh=wh*curtagitem->mfact;
+		sh=wh*(1.-curtagitem->mfact)/(n-1);
 		y=wy;
 		i=1;
 		while(c) {
