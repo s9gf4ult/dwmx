@@ -1641,28 +1641,29 @@ Client *tilestripv(Client *c, unsigned int count, int xo, int yo, int wo, int ho
 
 
 void
-tilel(void) {
+tilel(Monitor *m) {
 	int x, w, mw;
 	unsigned int  n;
 	Client *c;
+	TagItem *curtagitem = &m->tagitems[m->maintag[m->seltags]];
 
-	for(n = 0, c = nexttiled(clients); c; c = nexttiled(c->next), n++);
+	for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if(n == 0)
 		return;
 
 	/* master */
-	c = nexttiled(clients);
+	c = nexttiled(m->clients);
 	Client *cc = c;
-	mw = ww * CURRENTTAGITEM.mfact;
-	c = tilestripv(c, n < CURRENTTAGITEM.mainarea ? n : CURRENTTAGITEM.mainarea, wx, wy, n <= CURRENTTAGITEM.mainarea ? ww : mw, wh);
-	if ((!c) || (n <= CURRENTTAGITEM.mainarea)) return;
+	mw = m->ww * curtagitem->mfact;
+	c = tilestripv(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, m->wx, m->wy, n <= curtagitem->mainarea ? m->ww : m->mw, m->wh);
+	if ((!c) || (n <= curtagitem->mainarea)) return;
 
 	/* tile stack */
-	int onex = wx + mw;
+	int onex = m->wx + mw;
 	int twox = cc->x + cc->w;
 	x = onex > twox ? onex : twox;
-	w = ww - (x - wx);
-	tilestripv(c, n - CURRENTTAGITEM.mainarea, x, wy, w, wh);
+	w = m->ww - (x - m->wx);
+	tilestripv(c, n - curtagitem->mainarea, x, m->wy, w, m->wh);
 
 }
 
