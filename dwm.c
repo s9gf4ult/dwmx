@@ -1764,14 +1764,14 @@ void accordion(Monitor *m)
 	unsigned int n;
 	TagItem *curtagitem = &m->tagitems[m->maintag[m->seltags]];
 
-	c=nexttiled(clients); n=0;
+	c=nexttiled(m->clients); n=0;
 	while(c){n++; c=nexttiled(c->next);};
 	if (!n) return;
-	c=nexttiled(clients);
+	c=nexttiled(m->clients);
 	if (n==1) {
 		int bww;
 		bww=2 * c->bw;
-		resize(nexttiled(clients), wx, wy, ww-bww, wh-bww);
+		resize(nexttiled(m->clients), m->wx, m->wy, m->ww - bww, m->wh - bww, False);
 		return;
 	} else {
 		//find tiled wich befor or equal selected client
@@ -1781,20 +1781,20 @@ void accordion(Monitor *m)
 
 		while(c) {
 			if (! c->isfloating) maincl=c;
-			if (c == sel) break;
+			if (c == m->sel) break;
 			c=nextvisible(c->next);
 		}
 		if (! maincl) return;
 		
 		//applying resizing
-		c=nexttiled(clients);
-		mh=wh*curtagitem->mfact;
-		sh=wh*(1.-curtagitem->mfact)/(n-1);
-		y=wy;
+		c = nexttiled(m->clients);
+		mh = m->wh * curtagitem->mfact;
+		sh = m->wh * (1. - curtagitem->mfact) / (n - 1);
+		y = m->wy;
 		i=1;
 		while(c) {
-			int hh = ((i != n) ? ((c == maincl) ? mh : sh) : (wh - (y - wy))); 
-			resize(c, wx, y, ww-2 * c->bw, hh - 2 * c->bw);
+			int hh = ((i != n) ? ((c == maincl) ? mh : sh) : (m->wh - (y - m->wy))); 
+			resize(c, m->wx, y, m->ww - (2 * c->bw), hh - (2 * c->bw));
 			y += HEIGHT(c);
 			c = nexttiled(c->next);
 			i++;
@@ -1804,11 +1804,12 @@ void accordion(Monitor *m)
 
 void setmainarea(const Arg *arg)
 {
+	TagItem *curtagitem = &selmon->tagitems[selmon->maintag[selmon->seltags]];
 	if ((arg) && (arg->i)) {
-		CURRENTTAGITEM.mainarea += arg->i;
+		curtagitem->mainarea += arg->i;
 	}
-	if ( CURRENTTAGITEM.mainarea <= 0) CURRENTTAGITEM.mainarea = 1;
-	arrange();
+	if ( curtagitem->mainarea <= 0) curtagitem->mainarea = 1;
+	arrange(selmon);
 }
 
 
