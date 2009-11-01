@@ -31,7 +31,8 @@ static Rule rules[] = {
 	{ "SAPGUI",   NULL,       NULL,       0,            True,           -1},
 	{ "VirtualBox",NULL,      NULL,       0,            True,           -1},
 	{ NULL, "gtk_file_chooser",NULL,      0,            True,           -1},
-	{ "Vncviewer", NULL,      NULL,       0,            True,           -1}
+	{ "Vncviewer", NULL,      NULL,       0,            True,           -1},
+	{ "nxclient", NULL,       NULL,       0,            True,           -1}
 };
 
 /* layout(s) */
