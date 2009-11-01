@@ -54,21 +54,21 @@ static Layout layouts[] = {
 #define TILE_TOP (&layouts[2])
 #define TILE_BOTTOM (&layouts[3])
 
-//static TagItem tagitems[] = {
+static TagItem tagitems[] = {
 
-		//// layout           mfact    mainarea
-		//{ TILE_ACCORDION,      0.8 ,    1}, //1
-		//{ TILE_ACCORDION,      0.8 ,    1}, //2
-		//{ TILE_TOP      ,      0.55,    1}, //3
-		//{ TILE_TOP      ,      0.55,    1}, //4
-		//{ TILE_TOP      ,      0.55,    1}, //5
-		//{ TILE_LEFT     ,      0.65,    1}, //6
-		//{ TILE_TOP      ,      0.55,    1}, //7
-		//{ TILE_TOP      ,      0.55,    1}, //8
-		//{ TILE_LEFT     ,      0.42,    1}  //9
-//};
+		// layout           mfact    mainarea
+		[0] = { TILE_ACCORDION,      0.8 ,    1}, 
+		[1] = { TILE_ACCORDION,      0.8 ,    1},
+		[2] = { TILE_TOP      ,      0.55,    1},
+		[3] = { TILE_TOP      ,      0.55,    1},
+		[4] = { TILE_TOP      ,      0.55,    1},
+		[5] = { TILE_LEFT     ,      0.65,    1},
+		[6] = { TILE_TOP      ,      0.55,    1},
+		[7] = { TILE_TOP      ,      0.55,    1},
+		[8] = { TILE_LEFT     ,      0.42,    1} 
+};
 
-static TagItem DefaultTagItem = { TILE_LEFT, 0.6, 1};
+//static TagItem DefaultTagItem = { TILE_LEFT, 0.6, 1};
 
 
 /* key definitions */

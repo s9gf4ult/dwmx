@@ -640,11 +640,7 @@ createmon(void) {
 	m->showbar = showbar;
 	m->topbar = topbar;
 	strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
-
-	for (int i = 0; i < LENGTH(tags); i++) {
-		memcpy(&m->tagitems[i], &DefaultTagItem, sizeof(TagItem));
-	}
-
+	memcpy(m->tagitems, tagitems, MIN(sizeof(m->tagitems),sizeof(tagitems)));
 	return m;
 }
 
