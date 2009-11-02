@@ -1785,14 +1785,16 @@ void tiled(Monitor *m)
 	if(n == 0)
 		return;
 
+	/* tile stack */
+	if (n > curtagitem->mainarea) {
+		int i = 0;
+		for (c = nexttiled(m->clients); c && i < curtagitem->mainarea; i++, c = nexttiled(c->next));
+		tilestriph(c, n - curtagitem->mainarea, m->wx, m->wy, m->ww, (1 - curtagitem->mfact) * m->wh, &ca);
+	}
+
 	/* master */
 	c = nexttiled(m->clients);
-	tilestriph(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, m->wx, m->wy + (n <= curtagitem->mainarea ? 0  : ((1 - curtagitem->mfact) * m->wh)), m->ww, m->wh * (n <= curtagitem->mainarea ? 1 : curtagitem->mfact), &ca);
-	c = ca.c;
-	if ((!c) || (n <= curtagitem->mainarea)) return;
-
-	/* tile stack */
-	tilestriph(c, n - curtagitem->mainarea, m->wx, m->wy, m->ww, ca.y - m->wy, &ca);
+	tilestriph(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, m->wx, n <= curtagitem->mainarea ? m->wy : ca.y + ca.h, m->ww, n <= curtagitem->mainarea ? m->wh : m->wh - (ca.y + ca.h - m->wy), &ca);
 
 }
 
