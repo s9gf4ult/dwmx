@@ -1700,14 +1700,18 @@ tiler(Monitor *m) {
 	if(n == 0)
 		return;
 
+	/* tile stack */
+	if (n > curtagitem->mainarea) {
+		int i = 0;
+		for (c = nexttiled(m->clients); c && i < curtagitem->mainarea; i++, c = nexttiled(c->next));
+		tilestripv(c, n - curtagitem->mainarea, m->wx, m->wy, (1 - curtagitem->mfact) * m->ww, m->wh, &ca);
+	}
+
+
 	/* master */
 	c = nexttiled(m->clients);
-	tilestripv(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, n <= curtagitem->mainarea ? m->wx : m->wx + ((1 - curtagitem->mfact) * m->ww) , m->wy, (n <= curtagitem->mainarea ? 1 : curtagitem->mfact) * m->ww , m->wh, &ca);
-	c = ca.c;
-	if ((!c) || (n <= curtagitem->mainarea)) return;
+	tilestripv(c, n < curtagitem->mainarea ? n : curtagitem->mainarea, n <= curtagitem->mainarea ? m->wx : ca.x + ca.w, m->wy, n <= curtagitem->mainarea ? m->ww : m->ww - (ca.x + ca.w - m->wx) , m->wh, &ca);
 
-	/* tile stack */
-	tilestripv(c, n - curtagitem->mainarea, m->wx, m->wy, ca.x - m->wx, m->wh, &ca);
 
 }
 
