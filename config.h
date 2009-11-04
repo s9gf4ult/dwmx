@@ -24,6 +24,7 @@ static Rule rules[] = {
 	{ "Firefox",  NULL,       NULL, 	    1<<4,         False,          -1},
 	{ "Firefox",  NULL,  "Настройки",     0,            True,           -1},
 	{ "Firefox",  NULL,   "Загрузки",     0,            True,           -1},
+	{ "Firefox",  NULL,   "DownThemAll",  0,            True,           -1},
 	{ "Thunderbird-bin",NULL,     NULL,   1<<3,         False,          -1},
 	{ "Thunderbird-bin",NULL,"Настройки", 0,            True ,          -1},
 	{ "Gajim", 	  NULL, 	    NULL,       1<<5,         False,          -1},
