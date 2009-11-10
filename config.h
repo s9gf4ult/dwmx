@@ -2,7 +2,7 @@
 
 /* appearance */
 static const char font[]            = "-*-terminus-medium-r-normal-*-14-*-*-*-*-*-*-*";
-static const char normbordercolor[] = "#8517d2";
+static const char normbordercolor[] = "#005050";
 static const char selbordercolor[]  = "#ff0000";
 static const char normbgcolor[]     = "#cccccc";
 static const char normfgcolor[]     = "#000000";
