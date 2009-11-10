@@ -2,7 +2,7 @@
 
 /* appearance */
 static const char font[]            = "-*-terminus-medium-r-normal-*-14-*-*-*-*-*-*-*";
-static const char normbordercolor[] = "#8517d2";
+static const char normbordercolor[] = "#005050";
 static const char selbordercolor[]  = "#ff0000";
 static const char normbgcolor[]     = "#cccccc";
 static const char normfgcolor[]     = "#000000";
@@ -33,7 +33,8 @@ static Rule rules[] = {
 	{ "VirtualBox",NULL,      NULL,       0,            True,           -1},
 	{ NULL, "gtk_file_chooser",NULL,      0,            True,           -1},
 	{ "Vncviewer", NULL,      NULL,       0,            True,           -1},
-	{ "nxclient", NULL,       NULL,       0,            True,           -1}
+	{ "nxclient", NULL,       NULL,       0,            True,           -1},
+	{ "Ario",     NULL,       NULL,       1<<8,         False,          -1}
 };
 
 /* layout(s) */
@@ -96,8 +97,8 @@ static Key keys[] = {
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
-	{ MODKEY|ControlMask,           XK_h,      setmainarea,    {.i = +1}  },
-	{ MODKEY|ControlMask,           XK_l,      setmainarea,    {.i = -1} },
+	{ MODKEY|ControlMask,           XK_h,      setmainarea,    {.i = -1}  },
+	{ MODKEY|ControlMask,           XK_l,      setmainarea,    {.i = +1} },
 	{ MODKEY,                       XK_Return, zoom,           {0} },
 	{ MODKEY,                       XK_Tab,    view,           {0} },
 	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
