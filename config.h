@@ -34,7 +34,8 @@ static Rule rules[] = {
 	{ NULL, "gtk_file_chooser",NULL,      0,            True,           -1},
 	{ "Vncviewer", NULL,      NULL,       0,            True,           -1},
 	{ "nxclient", NULL,       NULL,       0,            True,           -1},
-	{ "Ario",     NULL,       NULL,       1<<8,         False,          -1}
+	{ "Ario",     NULL,       NULL,       1<<8,         False,          -1},
+	{ "Pidgin",   NULL,       NULL,       1<<5,         False,          -1}
 };
 
 /* layout(s) */
