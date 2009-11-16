@@ -36,7 +36,8 @@ static Rule rules[] = {
 	{ "nxclient", NULL,       NULL,       0,            True,           -1},
 	{ "Ario",     NULL,       NULL,       1<<8,         False,          -1},
 	{ "Pidgin",   NULL,       NULL,       1<<5,         False,          -1},
-	{ "qemu",     NULL,       NULL,       0,            True,           -1}
+	{ "qemu",     NULL,       NULL,       0,            True,           -1},
+	{ "XTerm",    NULL,  "NXclient",      0,            True,           -1}
 };
 
 /* layout(s) */
