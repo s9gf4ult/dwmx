@@ -27,6 +27,7 @@ static Rule rules[] = {
 	{ "Firefox",  NULL,   "DownThemAll",  0,            True,           -1},
 	{ "Thunderbird-bin",NULL,     NULL,   1<<3,         False,          -1},
 	{ "Thunderbird-bin",NULL,"Настройки", 0,            True ,          -1},
+	{ "Thunderbird-bin",NULL,"Составление", 0,            True ,          -1},
 	{ "Gajim", 	  NULL, 	    NULL,       1<<5,         False,          -1},
 	{ "Tkabber",  NULL,       NULL,       1<<5,         False,          -1},
 	{ "SAPGUI",   NULL,       NULL,       0,            True,           -1},
