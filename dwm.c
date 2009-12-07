@@ -217,6 +217,7 @@ static void grabkeys(void);
 static void initfont(const char *fontstr);
 static void keypress(XEvent *e);
 static void killclient(const Arg *arg);
+static void leavenotify(XEvent *e); 
 static void manage(Window w, XWindowAttributes *wa);
 static void mappingnotify(XEvent *e);
 static void maprequest(XEvent *e);
@@ -281,6 +282,7 @@ static void (*handler[LASTEvent]) (XEvent *) = {
 	[Expose] = expose,
 	[FocusIn] = focusin,
 	[KeyPress] = keypress,
+	[LeaveNotify] = leavenotify,
 	[MappingNotify] = mappingnotify,
 	[MapRequest] = maprequest,
 	[PropertyNotify] = propertynotify,
@@ -1108,6 +1110,16 @@ killclient(const Arg *arg) {
 		XSync(dpy, False);
 		XSetErrorHandler(xerror);
 		XUngrabServer(dpy);
+	}
+}
+
+void
+leavenotify(XEvent *e) {
+	XCrossingEvent *ev = &e->xcrossing;
+
+	if((ev->window == root) && !ev->same_screen) {
+		/*selscreen = False;*/
+		focus(NULL);
 	}
 }
 
