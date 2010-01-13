@@ -25,10 +25,10 @@ static Rule rules[] = {
 	{ "Firefox",  NULL,  "Настройки",     0,            True,           -1},
 	{ "Firefox",  NULL,   "Загрузки",     0,            True,           -1},
 	{ "Firefox",  NULL,   "DownThemAll",  0,            True,           -1},
-	{ "Thunderbird-bin",NULL,     NULL,   1<<3,         False,          -1},
-	{ "Thunderbird-bin",NULL,"Настройки", 0,            True ,          -1},
-	{ "Thunderbird-bin",NULL,"Составление", 0,            True ,          -1},
-	{ "Thunderbird-bin",NULL,"Поиск", 0,            True ,          -1},
+   { "Thunderbird"    ,NULL, NULL  , 1<<3,            False ,          -1},
+	{ "Thunderbird",NULL,"Настройки", 0,            True ,          -1},
+	{ "Thunderbird",NULL,"Составление", 0,            True ,          -1},
+	{ "Thunderbird",NULL,"Поиск", 0,            True ,          -1},
 	{ "Gajim", 	  NULL, 	    NULL,       1<<5,         False,          -1},
 	{ "Tkabber",  NULL,       NULL,       1<<5,         False,          -1},
 	{ "SAPGUI",   NULL,       NULL,       0,            True,           -1},
@@ -91,7 +91,7 @@ static TagItem tagitems[] = {
 
 /* commands */
 static const char *dmenucmd[] = { "dmenu_run", "-fn", font, "-nb", normbgcolor, "-nf", normfgcolor, "-sb", selbgcolor, "-sf", selfgcolor, NULL };
-static const char *termcmd[]  = { "uxterm", NULL };
+static const char *termcmd[]  = { "uxterm", "-tn", "xterm-256color", NULL };
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
